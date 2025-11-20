@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
@@ -13,7 +12,7 @@ const Dashboard = () => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-
+  //fetch
   const fetchProducts = async () => {
     try {
       const { data } = await axios.get(`${API_URL}/item/`);
@@ -26,7 +25,7 @@ const Dashboard = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
-
+  //submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -47,7 +46,7 @@ const Dashboard = () => {
 
     setLoading(false);
   };
-
+  //delete
   const deleteItem = async (id) => {
     try {
       await axios.delete(`${API_URL}/item/${id}`);
@@ -56,8 +55,7 @@ const Dashboard = () => {
       console.log("Error deleting", err);
     }
   };
-
-  
+  //edit 
   const editItem = (item) => {
     setForm({ title: item.title, description: item.description });
     setIsEdit(true);
@@ -71,7 +69,7 @@ const Dashboard = () => {
       <form onSubmit={handleSubmit}>
         <input
           name="title"
-          placeholder="Enter title"
+          placeholder="enter title"
           value={form.title}
           onChange={handleChange}
         />
@@ -79,18 +77,16 @@ const Dashboard = () => {
 
         <input
           name="description"
-          placeholder="Enter description"
+          placeholder="enter description"
           value={form.description}
           onChange={handleChange}
         />
         <br />
 
         <button type="submit" disabled={loading}>
-          {loading ? "Saving..." : isEdit ? "Update" : "Create"}
+          {isEdit ? "Update" : "Create"}
         </button>
       </form>
-
-      <hr />
 
       <h2>Items</h2>
       <div>
