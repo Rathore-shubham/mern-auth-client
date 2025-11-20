@@ -1,57 +1,81 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
-  const [msg, setMsg] = useState("");
-  const navigate = useNavigate();
+  const [isEdit, setIsEdit] = useState("");
+  const [form, setForm] = useState({ title: "", description: "" });
+  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState([]);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  // const API_URL = import.meta.env.VITE_API_URL;
+
+  const fetchProducts = async () => {
+    const { data } = await axios.get(`${API_URL}/item/`);
+    const products = data;
+    setProducts(products);
+    console.log(products);
+  };
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/auth/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setUser(res.data);
-      } catch (err) {
-        setMsg("Session expired. Please login again.", err);
-        setTimeout(() => navigate("/login"), 1000);
-      }
-    };
-
-    fetchProfile();
+    fetchProducts();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/item/`, form);
+      setForm(res.data);
+    } catch (error) {
+      console.log("error submiting form", error);
+    }
+    setLoading(false);
+  };
+
+  const deleteItem = (e) => {
+    const newProduct = products.filter((item) => item.index !== 1);
+    setForm(newProduct);
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "40px auto" }}>
-      <h2>Dashboard</h2>
+    <div>
+      <h2>create Items</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          name="title"
+          placeholder="enter title"
+          value={form.title}
+          onChange={handleChange}
+        />
+        <br />
+        <input
+          name="description"
+          placeholder="enter description"
+          value={form.description}
+          onChange={handleChange}
+        />
+        <br />
+        <button type="submit" disabled={loading}>
+          {loading ? "Update" : "create"}
+        </button>
+      </form>
 
-      {!user && !msg && <p>Loading...</p>}
-      {msg && <p>{msg}</p>}
+      <h2>Items</h2>
 
-      {user && (
-        <>
-          <p><b>Name:</b> {user.name}</p>
-          <p><b>Email:</b> {user.email}</p>
-          <button onClick={handleLogout}>Logout</button>
-        </>
-      )}
+      <div>
+        {products.map((product) => (
+          <p key={product.id}>
+            {product.title} {product.description}
+            <button>{isEdit ? "Update" : "create"}</button>{" "}
+            <button handleDelete={product.deleteItem}>Delete</button>
+          </p>
+        ))}
+      </div>
     </div>
   );
 };
